@@ -5,6 +5,22 @@ from typing import Union
 
 decode_line = lambda lin: [x.strip() for x in lin.decode(errors='ignore').split('\t')]
 
+BIN_HEADERS = ['<0.523', '0.542', '0.583', '0.626', '0.673', '0.723', '0.777', '0.835',
+       '0.898', '0.965', '1.037', '1.114', '1.197', '1.286', '1.382', '1.486',
+       '1.596', '1.715', '1.843', '1.981', '2.129', '2.288', '2.458', '2.642',
+       '2.839', '3.051', '3.278', '3.523', '3.786', '4.068', '4.371', '4.698',
+       '5.048', '5.425', '5.829', '6.264', '6.732', '7.234', '7.774', '8.354',
+       '8.977', '9.647', '10.37', '11.14', '11.97', '12.86', '13.82', '14.86',
+       '15.96', '17.15', '18.43', '19.81']
+
+FLOAT_HEADERS = ['Inlet Pressure', 'Total Flow', 'Sheath Flow', 'Analog Input Voltage 0',
+       'Analog Input Voltage 1', 'Digital Input Level 0',
+       'Digital Input Level 1', 'Digital Input Level 2', 'Laser Power',
+       'Laser Current', 'Sheath Pump Voltage', 'Total Pump Voltage',
+       'Box Temperature', 'Avalanch Photo Diode Temperature',
+       'Avalanch Photo Diode Voltage', 'Median(m)', 'Mean(m)',
+       'Geo. Mean(m)', 'Mode(m)', 'Geo. Std. Dev.', 'Total Conc.(#/cm)'] + BIN_HEADERS
+
 def _read_APS_text_file(path_to_file: str):
     # Read in file as raw bytes
     with open(path_to_file,'rb') as f:
@@ -49,7 +65,7 @@ def _read_APS_text_file_2(filepath: str):
 
     bins = df.columns[4:56]
     df[bins] = df[bins].astype(float)
-    df['bins'] = [r for r in df[bins].values.astype('float')]
+    
 
     return df
 
@@ -66,14 +82,28 @@ def read_APS_file(filepath: str) -> Union[pd.DataFrame, None]:
     """
     _df = None
     try:
-        return _read_APS_text_file(filepath)
+        _df = _read_APS_text_file(filepath)
     except Exception as e:
         pass
     if _df is None:
         try:
-            return _read_APS_text_file_2(filepath)
+            _df = _read_APS_text_file_2(filepath)
         except Exception as e:
             pass
+
+    try:
+        _df[FLOAT_HEADERS] = _df[FLOAT_HEADERS].astype(float, errors='ignore')
+    except Exception as e:
+        pass
+
+    try:
+        _df['bins'] = [r for r in _df[BIN_HEADERS].values.astype('float')]
+    except Exception as e:
+        pass
+
+    return _df
+
+    
 
 def read_folder_APS(path_to_folder: str, file_suffix: str = ".txt") -> Union[pd.DataFrame, None]:
     """
@@ -94,19 +124,10 @@ def read_folder_APS(path_to_folder: str, file_suffix: str = ".txt") -> Union[pd.
 
         full_fp = f"{path_to_folder.rstrip('/')}/{fp}"
 
-        _df = None
-        try:
-            _df = _read_APS_text_file(full_fp)
-        except Exception as e:
-            pass
-        if _df is None:
-            try:
-                _df = _read_APS_text_file_2(full_fp)
-            except Exception as e:
-                pass
+        _df = read_APS_file(full_fp)
+
         if _df is None:
             continue
-
         dfs.append(_df)
     if not dfs:
         return None
