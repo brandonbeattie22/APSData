@@ -13,6 +13,12 @@ BIN_HEADERS = ['<0.523', '0.542', '0.583', '0.626', '0.673', '0.723', '0.777', '
        '8.977', '9.647', '10.37', '11.14', '11.97', '12.86', '13.82', '14.86',
        '15.96', '17.15', '18.43', '19.81']
 
+APS_BIN_MIDPOINTS = np.array([np.sqrt(.487 * .523), 0.542, 0.583, 0.626, 0.673, 0.723, 0.777, 0.835, 0.898, 0.965, 1.037, 1.114, 1.197, 1.286, 1.382, 1.486, 1.596,
+1.715, 1.843, 1.981, 2.129, 2.288, 2.458, 2.642, 2.839, 3.051, 3.278, 3.523, 3.786, 4.068, 4.371, 4.698, 5.048, 5.425, 5.829, 6.264, 6.732, 
+7.234, 7.774, 8.354, 8.977, 9.647, 10.37, 11.14, 11.97, 12.86, 13.82, 14.86, 15.96, 17.15, 18.43, 19.81 ])
+APS_BIN_BOUNDS = np.array([.487, .523] + np.sqrt(APS_BIN_MIDPOINTS[2:] * APS_BIN_MIDPOINTS[1:-1]).tolist())
+APS_DLOGDP = np.log10(APS_BIN_BOUNDS[1:]) - np.log10(APS_BIN_BOUNDS[:-1])
+
 FLOAT_HEADERS = ['Inlet Pressure', 'Total Flow', 'Sheath Flow', 'Analog Input Voltage 0',
        'Analog Input Voltage 1', 'Digital Input Level 0',
        'Digital Input Level 1', 'Digital Input Level 2', 'Laser Power',
